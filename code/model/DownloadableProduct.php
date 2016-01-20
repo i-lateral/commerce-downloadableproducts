@@ -1,6 +1,7 @@
 <?php
 
-class DownloadableProduct extends Product {
+class DownloadableProduct extends Product
+{
     
     /**
      * A list of statuses that an order containing this product must
@@ -32,17 +33,20 @@ class DownloadableProduct extends Product {
      * Get the link to download the file associated with this product
      * 
      */
-    public function getDownloadLink() {
+    public function getDownloadLink()
+    {
         $link = "";
         
-        if($this->FileID)
+        if ($this->FileID) {
             $link = $this->File()->Link();
+        }
         
         return $link;
     }
     
     
-    public function getCMSFields() {
+    public function getCMSFields()
+    {
         $fields = parent::getCMSFields();
         
         $fields->removeByName("Weight");
@@ -57,7 +61,8 @@ class DownloadableProduct extends Product {
         return $fields;
     }
     
-    public function requireDefaultRecords() {
+    public function requireDefaultRecords()
+    {
         parent::requireDefaultRecords();
         
         // See if we need to create downloadable postage
@@ -70,7 +75,7 @@ class DownloadableProduct extends Product {
                 )
             );
         
-        if(!$records->exists()) {
+        if (!$records->exists()) {
             $config = SiteConfig::current_site_config();
             
             $postage = PostageArea::create();
@@ -91,7 +96,8 @@ class DownloadableProduct extends Product {
         }
     }
     
-    public function onBeforeWrite() {
+    public function onBeforeWrite()
+    {
         parent::onBeforeWrite();
         
         // Downloadable products have 0 weight and Pack Size
@@ -99,11 +105,13 @@ class DownloadableProduct extends Product {
         $this->PackSize = 0;
     }
     
-    public function canDownload($member = null) {
-        if(!$member || !$member instanceof Member)
+    public function canDownload($member = null)
+    {
+        if (!$member || !$member instanceof Member) {
             $member = Member::currentUser();
+        }
             
-        if($member) {
+        if ($member) {
             $items = $member
                 ->Orders()
                 ->filter(array(
