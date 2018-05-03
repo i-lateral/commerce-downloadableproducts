@@ -9,6 +9,12 @@
  */
 class DownloadableFileController extends Controller {
 
+	private static $admin_permissions = [
+		"ADMIN",
+		"CATALOGUE_EDIT_PRODUCTS",
+		"CMSACCESSAssetAdmin"
+	];
+
     // We calculate the timelimit based on the filesize. Set to 0 to give unlimited timelimit.
 	// The calculation is: give enough time for the user with x kB/s connection to donwload the entire file.
 	// E.g. The default 50kB/s equates to 348 minutes per 1GB file.
@@ -119,14 +125,22 @@ class DownloadableFileController extends Controller {
 	public function hasAccess() {
 		$request = $this->getRequest();
 		$return = false;
-		$vars = $request->getVars();
+		$order_id = $request->getVar("o");
+		$key = $request->getVar("k");
 		$url = array_key_exists('url', $_GET) ? $_GET['url'] : $_SERVER['REQUEST_URI'];
 		$url = Director::makeRelative(ltrim(str_replace(BASE_URL, '', $url), '/'));
 		$file = File::find($url);
+		
+		// if the current user has global permissions, allow them access
+		if (Permission::check($this->config()->admin_permissions)) {
+			return true;
+		}
 
-		$order = Order::get()->byID($vars['o']);
+		// Otherwise, look for the current order
+		$order = Order::get()->byID($order_id);
+
 		if ($order) {
-			$return = $order->AccessKey == $vars['k'] ? true : false;
+			$return = $order->AccessKey == $key ? true : false;
 			if ($return) {
 				$product = DownloadableProduct::get()
 					->filter("FileID", $file->ID)
